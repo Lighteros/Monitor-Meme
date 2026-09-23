@@ -1,0 +1,94 @@
+# Exclude local desktop build artifacts and sidecar binaries from deployments
+# These files are large and not needed by the Vercel-hosted frontend/API
+
+# Tauri build outputs
+src-tauri/target/
+src-tauri/bundle/
+
+# Sidecar and bundled node binaries
+src-tauri/sidecar/
+src-tauri/**/node
+
+# macOS disk images and app bundles
+**/*.dmg
+**/*.app
+
+# Rust/Cargo build artifacts (safety)
+target/
+
+# Common local artifacts
+.DS_Store
+
+# $MONITOR does not use the upstream World Monitor routing middleware.
+# Vercel otherwise deploys middleware.ts and invokes it before serving the
+# static dashboard, which can crash because the lean deployment intentionally
+# omits upstream docs/auth/product-routing subsystems.
+middleware.ts
+
+# Never deploy api test files: every non-underscore file under api/ becomes a
+# live serverless function, and a deployed *.test.mjs executes its whole
+# node:test suite (production env + Sentry) on every request (WORLDMONITOR-VD).
+# Guarded by tests/deploy-config.test.mjs.
+api/**/*.test.mjs
+
+# $MONITOR production API allowlist.
+# Avoid a broad `api/*` exclusion: Vercel prunes ignored directories before it
+# evaluates nested negation rules. Ignore unused top-level routes and families
+# explicitly so the required dynamic gateway directories remain traversable.
+api/*.js
+api/*.ts
+api/*.mjs
+api/*.json
+!api/_*
+!api/bootstrap.js
+!api/escalation-x-feed.js
+!api/health.js
+!api/rss-proxy.js
+!api/wm-session.js
+
+api/aviation/
+api/batch/
+api/brief/
+api/climate/
+api/consumer-prices/
+api/cyber/
+api/discord/
+api/displacement/
+api/economic/
+api/embed/
+api/forecast/
+api/giving/
+api/health/
+api/imagery/
+api/internal/
+api/leads/
+api/maritime/
+api/market/
+api/mcp/
+api/me/
+api/natural/
+api/oauth/
+api/positive-events/
+api/prediction/
+api/referral/
+api/research/
+api/resilience/
+api/safety/
+api/sanctions/
+api/scenario/
+api/scorecard/
+api/security/
+api/seismology/
+api/skills/
+api/slack/
+api/supply-chain/
+api/thermal/
+api/trade/
+api/user/
+api/v2/
+api/webcam/
+api/wildfire/
+
+# Live News only needs the YouTube live endpoint.
+api/youtube/*
+!api/youtube/live.js
