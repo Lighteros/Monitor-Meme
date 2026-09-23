@@ -1,0 +1,164 @@
+/*
+ * Cascade layer wrapper — places ALL of main.css into @layer base.
+ * Variant theme CSS (happy-theme.css etc.) stays unlayered and therefore
+ * always wins the cascade, regardless of specificity or source order.
+ *
+ * See: https://developer.mozilla.org/en-US/docs/Web/CSS/@layer
+ */
+@import url('./main.css') layer(base);
+@import url('./header.css') layer(base);
+@import url('./country-deep-dive.css') layer(base);
+@import url('./map-context-menu.css') layer(base);
+@import url('./supply-chain-panel.css') layer(base);
+@import url('./dashboard-polish.css');
+
+/* $MONITOR factory footprint for the generic Financial news panel.
+ * The finance panel uses NewsPanel, whose upstream natural size is 1x1.
+ * Give it the finished $MONITOR desktop default of 2 wide x 2 tall while
+ * allowing any explicit saved span/column classes to win after a user resize. */
+@media (min-width: 769px) {
+  #panelsGrid .panel[data-panel="finance"]:not(.col-span-1):not(.col-span-2):not(.col-span-3),
+  #panelsGrid .panel-deferred-shell[data-panel="finance"]:not(.col-span-1):not(.col-span-2):not(.col-span-3) {
+    grid-column: span 2;
+  }
+
+  #panelsGrid .panel[data-panel="finance"]:not(.span-1):not(.span-2):not(.span-3):not(.span-4),
+  #panelsGrid .panel-deferred-shell[data-panel="finance"]:not(.span-1):not(.span-2):not(.span-3):not(.span-4) {
+    grid-row: span 2;
+  }
+}
+
+/*
+ * $MONITOR mobile sizing.
+ *
+ * Live News, $MONITOR Live, and Financial carry desktop span classes. On
+ * mobile the dashboard is a vertical flex stack, so let those panels size
+ * from their actual content instead of retaining desktop row heights. This
+ * also avoids nested scrollbars — the page itself becomes the only vertical
+ * scroller.
+ */
+@layer base {
+  @media (max-width: 768px) {
+    /* The bottom Map/Today navigation owns map visibility on mobile. Keep the
+       legacy map header and Show/Hide button in the DOM for its existing
+       collapse-state wiring, but remove the entire white header strip from
+       the mobile UI. Desktop keeps the normal map header. */
+    #mapSection > .panel-header {
+      display: none !important;
+    }
+
+    #panelsGrid .panel[data-panel="live-news"],
+    #panelsGrid .panel-deferred-shell[data-panel="live-news"],
+    #panelsGrid .panel[data-panel="monitor-market"],
+    #panelsGrid .panel-deferred-shell[data-panel="monitor-market"],
+    #panelsGrid .panel[data-panel="finance"],
+    #panelsGrid .panel-deferred-shell[data-panel="finance"] {
+      flex: 0 0 auto !important;
+      grid-row: auto !important;
+      height: auto !important;
+      min-height: 0 !important;
+      max-height: none !important;
+    }
+
+    /* The Today button scrolls Live News into view. Leave room for the sticky
+       mobile category chip row so the Live News title lands fully visible
+       instead of being tucked underneath it. */
+    #panelsGrid .panel[data-panel="live-news"],
+    #panelsGrid .panel-deferred-shell[data-panel="live-news"] {
+      scroll-margin-top: 52px;
+    }
+
+    #panelsGrid .panel[data-panel="live-news"] .panel-content {
+      flex: 0 0 auto;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    #panelsGrid .panel[data-panel="live-news"] .live-news-player,
+    #panelsGrid .panel[data-panel="live-news"] .live-news-placeholder,
+    #panelsGrid .panel[data-panel="live-news"] .live-news-native-video,
+    #panelsGrid .panel[data-panel="live-news"] .live-news-embed-frame {
+      flex: 0 0 auto;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+    }
+
+    #panelsGrid .panel[data-panel="monitor-market"] .panel-content {
+      flex: 0 0 auto;
+      min-height: 0;
+      overflow-y: visible;
+    }
+
+    #panelsGrid .panel[data-panel="finance"] .panel-content {
+      flex: 0 0 auto;
+      min-height: 0;
+      overflow-y: visible;
+    }
+
+    #panelsGrid .panel[data-panel="monitor-market"] .monitor-market-panel {
+      height: auto;
+      min-height: 0;
+    }
+
+    /* Fullscreen owns its own height contract; do not let the mobile natural
+       sizing rule interfere when the user expands Live News. */
+    #panelsGrid .panel[data-panel="live-news"].live-news-fullscreen .panel-content,
+    #panelsGrid .panel[data-panel="live-news"].live-news-fullscreen .live-news-player,
+    #panelsGrid .panel[data-panel="live-news"].live-news-fullscreen .live-news-native-video,
+    #panelsGrid .panel[data-panel="live-news"].live-news-fullscreen .live-news-embed-frame {
+      flex: 1 1 auto;
+    }
+  }
+}
+
+/* $MONITOR mobile primary navigation has four visible destinations. Upstream
+ * reserves five grid tracks for Search as well, but Search is hidden in this
+ * variant; collapse the bar to four equal tracks so there is no empty slot. */
+@media (max-width: 768px) {
+  #mobileTabBar.mobile-tab-bar {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  #mobileTabBar .mobile-tab {
+    width: 100%;
+  }
+
+  #mobileTabBar .mobile-tab-icon svg {
+    display: block;
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Use the uploaded DEX eagle mark in place of the legacy triangle.
+     The PNG is used as an alpha mask so the icon follows currentColor in
+     both light and dark themes instead of keeping a black square background. */
+  #mobileTabBar .mobile-tab[data-mobile-tab="alerts"] .mobile-tab-icon {
+    width: 20px;
+    height: 21px;
+    font-size: 0;
+    background-color: currentColor;
+    -webkit-mask: url('/icons/dex-eagle-mask.png') center / contain no-repeat;
+    mask: url('/icons/dex-eagle-mask.png') center / contain no-repeat;
+  }
+}
+
+/* $MONITOR does not expose Palantir in the public reference links. */
+.site-footer a[href="https://www.palantir.com/"],
+.mobile-menu-footer-links a[href="https://www.palantir.com/"] {
+  display: none !important;
+}
+
+/* The upstream digest status only reflects the primary snapshot pipeline.
+ * MONITOR can still be serving fresh per-feed fallback news while it reports
+ * unavailable, so keep that misleading status row out of the visible footer. */
+@media (min-width: 769px) {
+  .site-footer .status-panel-container {
+    display: none !important;
+  }
+}
